@@ -1,32 +1,45 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
     <router-view/>
   </div>
 </template>
 
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300&display=swap');
+@import "~boxicons/css/boxicons.min.css";
+body {
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #36D1DC;
+  background: -webkit-linear-gradient(to right, #5B86E5, #36D1DC);
+  background: linear-gradient(to right, #5B86E5, #36D1DC);
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+
+  @media screen and (max-width: 360px) {
+    max-width: 100vw;
+    min-width: 100vw;
+    height: 100vh;
+    background: #000918;
+  }
 }
 
-#nav {
-  padding: 30px;
+#app {
+  width: 100vw;
+  height: 100vh;
+  background: #000918;
+  overflow: hidden;
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
+  @media screen and (max-width: 360px) {
+    max-width: 100vw;
+    min-width: 100vw;
+    height: 100vh;
   }
 }
 </style>

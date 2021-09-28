@@ -14,17 +14,17 @@
       <div class="city_info">
         <div class="info__wind">
           <i class="bx bx-wind"></i>
-          <span>13 km/h</span>
+          <span>{{ weatherInfo.wind }} km/h</span>
           <span>Wind</span>
         </div>
         <div class="info__rain">
           <i class="bx bx-cloud-rain"></i>
-          <span>67%</span>
+          <span>{{weatherInfo.rain}}%</span>
           <span>Chance of rain</span>
         </div>
         <div class="info__humidity">
           <i class="bx bx-droplet"></i>
-          <span>30%</span>
+          <span>{{ weatherInfo.humidity }}%</span>
           <span>Humidity</span>
         </div>
       </div>
@@ -59,6 +59,9 @@ export default {
         temperature: 0,
         condition: '',
         city: '',
+        rain: '',
+        humidity: '',
+        wind: '',
       },
       color: '#262626',
     }
@@ -88,7 +91,10 @@ export default {
           .then((res) => {
             this.weatherInfo.city = city
             this.weatherInfo.temperature = res.data.current.temp
-            this.weatherInfo.condition = res.data.current.weather.description
+            this.weatherInfo.condition = res.data.current.weather[0].main
+            this.weatherInfo.rain = res.data.hourly[0]['pop']
+            this.weatherInfo.wind = res.data.current.wind_speed
+            this.weatherInfo.humidity = res.data.current.humidity
           })
     },
     openLoading() {

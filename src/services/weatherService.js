@@ -14,6 +14,7 @@ export default {
         return weatherService.get('/onecall', {
             params: {
                 appid: '3df97b88e0470b962211fdcb9809ad37',
+                units: 'metric',
                 lat,
                 lon,
             }

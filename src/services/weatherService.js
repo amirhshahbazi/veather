@@ -1,13 +1,6 @@
-import axios from "axios"
+import apiService from "./APIService"
 
-const weatherService = axios.create({
-    baseURL: 'https://api.openweathermap.org/data/2.5',
-    withCredentials: false,
-    headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-    }
-})
+const weatherService = apiService('https://api.openweathermap.org/data/2.5')
 
 export default {
     getCity(lat, lon) {

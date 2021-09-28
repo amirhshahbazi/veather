@@ -1,31 +1,37 @@
 <template>
   <div class="city">
     <div class="city__today">
-      <div class="city__title"><i class='bx bxs-map'></i>Tehran</div>
+      <div class="city__title"><i class='bx bxs-map'></i>{{ weatherInfo.city }}</div>
       <div class="city__animation">
         <lottie :options="defaultOptions" :width="165" :height="165" @animCreated="handleAnimation"/>
       </div>
       <div class="city__temperature">
-        27
+        {{ parseFloat(weatherInfo.temperature).toFixed(0) }}
       </div>
-      <div class="city__condition">Sunny</div>
+      <div class="city__condition">{{ weatherInfo.condition }}</div>
       <div class="city__date">Thursday, 17 May</div>
       <div class="city_divider"></div>
       <div class="city_info">
         <div class="info__wind">
           <i class="bx bx-wind"></i>
-          <span>13 km/h</span>
+          <span>{{ weatherInfo.wind }} km/h</span>
           <span>Wind</span>
         </div>
         <div class="info__rain">
           <i class="bx bx-cloud-rain"></i>
-          <span>67%</span>
+          <span>{{weatherInfo.rain}}%</span>
           <span>Chance of rain</span>
         </div>
         <div class="info__humidity">
           <i class="bx bx-droplet"></i>
-          <span>30%</span>
+          <span>{{ weatherInfo.humidity }}%</span>
           <span>Humidity</span>
+        </div>
+      </div>
+    </div>
+    <div class="city__loading">
+      <div ref="target" id="target" class="center">
+        <div :style="`background: ${color};`" class="con-input">
         </div>
       </div>
     </div>
@@ -34,6 +40,7 @@
 
 <script>
 import Lottie from 'vue-lottie/src/lottie.vue'
+import weatherService from "../services/weatherService"
 export default {
   name: "City",
   components: {
@@ -47,7 +54,16 @@ export default {
   data() {
     return {
       animation: window.animations.thunder,
-      animationSpeed: 1
+      animationSpeed: 1,
+      weatherInfo: {
+        temperature: 0,
+        condition: '',
+        city: '',
+        rain: '',
+        humidity: '',
+        wind: '',
+      },
+      color: '#262626',
     }
   },
   methods: {
@@ -69,13 +85,33 @@ export default {
 
     onSpeedChange: function () {
       this.anim.setSpeed(this.animationSpeed)
+    },
+    async getWeatherInfo(lat, lon, city) {
+      await weatherService.getCity(lat, lon)
+          .then((res) => {
+            this.weatherInfo.city = city
+            this.weatherInfo.temperature = res.data.current.temp
+            this.weatherInfo.condition = res.data.current.weather[0].main
+            this.weatherInfo.rain = res.data.hourly[0]['pop']
+            this.weatherInfo.wind = res.data.current.wind_speed
+            this.weatherInfo.humidity = res.data.current.humidity
+          })
+    },
+    openLoading() {
+      const loading = this.$vs.loading({
+        background: this.color,
+        color: '#fff'
+      })
+      setTimeout(() => {
+        loading.close()
+      }, 1000)
     }
   },
-  mounted() {
-    setTimeout(() => {
-      this.animation = window.animations.sunny
-    }, 1500)
-  }
+  async created() {
+    this.openLoading()
+    const {lat, lon, city} = this.$route.params
+    await this.getWeatherInfo(lat, lon, city)
+  },
 }
 </script>
 

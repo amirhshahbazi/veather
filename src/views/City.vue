@@ -2,14 +2,19 @@
   <div class="city">
     <div class="city__today">
       <div class="city__title"><i class='bx bxs-map'></i>{{ weatherInfo.city }}</div>
+      <div class="city__date">{{ weatherInfo.date }}</div>
       <div class="city__animation">
-        <lottie :options="defaultOptions" :width="165" :height="165" @animCreated="handleAnimation"/>
+        <clear v-if="weatherInfo.condition.includes('clear')" />
+        <few-clouds v-if="weatherInfo.condition.includes('clouds') || weatherInfo.condition.includes('atmosphere')" />
+        <rain v-if="weatherInfo.condition.includes('rain') || weatherInfo.condition.includes('drizzle')" />
+        <snow v-if="weatherInfo.condition.includes('snow')" />
+        <mist v-if="weatherInfo.condition.includes('mist')" />
+        <Thunderstorm v-if="weatherInfo.condition.includes('thunderstorm')" />
       </div>
       <div class="city__temperature">
         {{ parseFloat(weatherInfo.temperature).toFixed(0) }}
       </div>
       <div class="city__condition">{{ weatherInfo.condition }}</div>
-      <div class="city__date">Thursday, 17 May</div>
       <div class="city_divider"></div>
       <div class="city_info">
         <div class="info__wind">
@@ -35,26 +40,43 @@
         </div>
       </div>
     </div>
+    <div class="next-days center grid">
+      <vs-row justify="center">
+        <day v-for="day of weatherInfo.nextDays" :key="day.dt" :weather-info="day" />
+      </vs-row>
+    </div>
   </div>
 </template>
 
 <script>
-import Lottie from 'vue-lottie/src/lottie.vue'
+// eslint-disable
 import weatherService from "../services/weatherService"
+import Clear from "../components/animations/Clear";
+import FewClouds from "../components/animations/FewClouds";
+import Cloudy from "../components/animations/Cloudy";
+import Rain from "../components/animations/Rain";
+import Snow from "../components/animations/Snow";
+import Mist from "../components/animations/Mist";
+import Thunderstorm from "../components/animations/Thunderstorm";
+import moment from 'moment'
+import Day from "../components/Day";
 export default {
   name: "City",
   components: {
-    Lottie,
+    Day,
+    // eslint-disable-next-line vue/no-unused-components
+    Clear, FewClouds, Cloudy, Rain, Snow, Mist, Thunderstorm
   },
-  computed: {
-    defaultOptions() {
-      return {animationData: this.animation}
+  filters: {
+    formatDay(timestamp) {
+      return moment.unix(timestamp).format("dddd")
+    },
+    formatMonthDay(timestamp) {
+      return moment.unix(timestamp).format("DD MMM")
     }
   },
   data() {
     return {
-      animation: window.animations.thunder,
-      animationSpeed: 1,
       weatherInfo: {
         temperature: 0,
         condition: '',
@@ -62,39 +84,33 @@ export default {
         rain: '',
         humidity: '',
         wind: '',
+        date: '',
+        nextDays: [],
       },
-      color: '#262626',
+      color: '#151515',
+      animationComponent: {
+          'clear': Clear,
+          'fewClouds': FewClouds,
+          'cloudy': Cloudy,
+          'rain': Rain,
+          'snow': Snow,
+          'mist': Mist,
+          'thunderstorm': Thunderstorm,
+        }
     }
   },
   methods: {
-    handleAnimation: function (anim) {
-      this.anim = anim
-    },
-
-    stop: function () {
-      this.anim.stop()
-    },
-
-    play: function () {
-      this.anim.play()
-    },
-
-    pause: function () {
-      this.anim.pause()
-    },
-
-    onSpeedChange: function () {
-      this.anim.setSpeed(this.animationSpeed)
-    },
     async getWeatherInfo(lat, lon, city) {
       await weatherService.getCity(lat, lon)
           .then((res) => {
             this.weatherInfo.city = city
             this.weatherInfo.temperature = res.data.current.temp
-            this.weatherInfo.condition = res.data.current.weather[0].main
+            this.weatherInfo.condition = res.data.current.weather[0].description
             this.weatherInfo.rain = res.data.hourly[0]['pop']
             this.weatherInfo.wind = res.data.current.wind_speed
             this.weatherInfo.humidity = res.data.current.humidity
+            this.weatherInfo.date = moment.unix(res.data.current.dt).format("dddd, DD MMM")
+            this.weatherInfo.nextDays = res.data.daily.slice(1, 4)
           })
     },
     openLoading() {
@@ -105,6 +121,16 @@ export default {
       setTimeout(() => {
         loading.close()
       }, 1000)
+    },
+    getAnimation() {
+      if (this.weatherInfo.condition.includes('clear')) return this.animationComponent.clear
+      if (this.weatherInfo.condition.includes('clouds')) return this.animationComponent.fewClouds
+      if (this.weatherInfo.condition.includes('rain')) return this.animationComponent.rain
+      if (this.weatherInfo.condition.includes('shower')) return this.animationComponent.shower
+      if (this.weatherInfo.condition.includes('thunderstorm')) return this.animationComponent.thunderstorm
+      if (this.weatherInfo.condition.includes('snow')) return this.animationComponent.snow
+      if (this.weatherInfo.condition.includes('mist')) return this.animationComponent.mist
+      else return this.animationComponent.cloudy
     }
   },
   async created() {
@@ -119,9 +145,13 @@ export default {
 .city {
   display: inherit;
   justify-content: center;
+  height: 100%;
   .city__today {
     width: 100%;
-    background: #13AFFE;
+    background: #4e54c8;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #8f94fb, #4e54c8);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #8f94fb, #4e54c8); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
     display: flex;
     flex-flow: column;
     justify-content: center;
@@ -191,6 +221,10 @@ export default {
         }
       }
     }
+  }
+  .next-days {
+    color: white;
+    padding: 20px;
   }
 }
 </style>

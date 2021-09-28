@@ -10,15 +10,16 @@
           v-model="query"
           block
           class="home__search-input"
+          :loading="searchLoading"
       />
     </div>
-    <transition name="fade">
       <div class="home__cities">
-        <div v-for="(city, index) in cities" :key="index" class="home__city" @click="openCity(city.lat, city.lon, city.display_place)">
-          {{city.display_place}}
-        </div>
+        <transition-group name="slide" appear>
+          <div v-for="(city, index) in cities" :key="index" class="home__city" @click="openCity(city.lat, city.lon, city.display_place)">
+            {{city.display_place}}
+          </div>
+        </transition-group>
       </div>
-    </transition>
   </div>
 </template>
 
@@ -34,16 +35,19 @@ export default {
       query: '',
       value: '',
       cities: [],
+      searchLoading: false,
     }
   },
   methods: {
     async fetchCitiesList(query) {
+      this.searchLoading = true
       await autocompleteService.getList(query)
           .then((res) => this.cities = res.data)
+      this.searchLoading = false
     },
     debounceInput: _.debounce(function (e) {
       this.fetchCitiesList(e)
-    }, 750),
+    }, 500),
     openCity(lat, lon, city) {
       this.$router.push({
         name: 'City',
@@ -62,7 +66,9 @@ export default {
 .home {
   display: flex;
   flex-flow: column;
-  justify-content: center;
+  justify-content: start;
+  width: 100%;
+  height: 100vh;
 
   .home__top {
     font-size: 18px;
@@ -103,7 +109,7 @@ export default {
       width: 380px;
       margin-bottom: 10px;
       @media screen and (max-width: 500px){
-        width: 85%;
+        width: 75vw;
       }
       &:hover {
         background: rgba(42, 33, 87, 1);
@@ -118,17 +124,5 @@ export default {
       width: 85%;
     }
   }
-}
-
-.fade-enter {
-  opacity: 0;
-}
-
-.fade-enter-active {
-  transition: opacity 0.5s;
-}
-
-.fade-leave {
-  opacity: 0;
 }
 </style>

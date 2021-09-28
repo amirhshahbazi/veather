@@ -1,13 +1,6 @@
-import axios from "axios"
+import apiService from "./APIService"
 
-const autocompleteService = axios.create({
-    baseURL: 'https://api.locationiq.com/v1',
-    withCredentials: false,
-    headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-    }
-})
+const autocompleteService = apiService('https://api.locationiq.com/v1')
 
 export default {
     getList(q) {

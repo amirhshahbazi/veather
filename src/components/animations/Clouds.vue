@@ -6,7 +6,7 @@
 import Lottie from 'vue-lottie/src/lottie.vue'
 import * as sunny from "../../assets/animations/fewClouds.json"
 export default {
-  name: "FewClouds",
+  name: "Clouds",
   components: {
     Lottie,
   },

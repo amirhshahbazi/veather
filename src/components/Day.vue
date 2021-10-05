@@ -64,6 +64,7 @@ export default {
 
   .next-day__dates {
     padding: 5px;
+    width: 85px;
     .next-day__day {}
     .next-day__date {
       opacity: 0.7;

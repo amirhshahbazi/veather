@@ -1,15 +1,16 @@
 <template>
   <div class="city">
+    <div class="city__loading">
+      <div ref="target" id="target" class="center">
+        <div :style="`background: ${loading.color};`" class="con-input">
+        </div>
+      </div>
+    </div>
     <div class="city__today">
       <div class="city__title"><i class='bx bxs-map'></i>{{ weatherInfo.city }}</div>
       <div class="city__date">{{ weatherInfo.date }}</div>
       <div class="city__animation">
-        <clear v-if="weatherInfo.condition.includes('clear')" />
-        <few-clouds v-if="weatherInfo.condition.includes('clouds') || weatherInfo.condition.includes('atmosphere')" />
-        <rain v-if="weatherInfo.condition.includes('rain') || weatherInfo.condition.includes('drizzle')" />
-        <snow v-if="weatherInfo.condition.includes('snow')" />
-        <mist v-if="weatherInfo.condition.includes('mist')" />
-        <Thunderstorm v-if="weatherInfo.condition.includes('thunderstorm')" />
+        <weather-animation v-if="weatherInfo.condition" :condition="weatherInfo.condition" />
       </div>
       <div class="city__temperature">
         {{ parseFloat(weatherInfo.temperature).toFixed(0) }}
@@ -24,7 +25,7 @@
         </div>
         <div class="info__rain">
           <i class="bx bx-cloud-rain"></i>
-          <span>{{weatherInfo.rain}}%</span>
+          <span>{{ weatherInfo.rain }}%</span>
           <span>Chance of rain</span>
         </div>
         <div class="info__humidity">
@@ -34,38 +35,25 @@
         </div>
       </div>
     </div>
-    <div class="city__loading">
-      <div ref="target" id="target" class="center">
-        <div :style="`background: ${color};`" class="con-input">
-        </div>
-      </div>
-    </div>
     <div class="next-days center grid">
       <vs-row justify="center">
-        <day v-for="day of weatherInfo.nextDays" :key="day.dt" :weather-info="day" />
+        <day v-for="day of weatherInfo.nextDays" :key="day.dt" :weather-info="day"/>
       </vs-row>
     </div>
   </div>
 </template>
 
 <script>
-// eslint-disable
 import weatherService from "../services/weatherService"
-import Clear from "../components/animations/Clear";
-import FewClouds from "../components/animations/FewClouds";
-import Cloudy from "../components/animations/Cloudy";
-import Rain from "../components/animations/Rain";
-import Snow from "../components/animations/Snow";
-import Mist from "../components/animations/Mist";
-import Thunderstorm from "../components/animations/Thunderstorm";
 import moment from 'moment'
 import Day from "../components/Day";
+import WeatherAnimation from "../components/WeatherAnimation";
+
 export default {
   name: "City",
   components: {
+    WeatherAnimation,
     Day,
-    // eslint-disable-next-line vue/no-unused-components
-    Clear, FewClouds, Cloudy, Rain, Snow, Mist, Thunderstorm
   },
   filters: {
     formatDay(timestamp) {
@@ -87,40 +75,40 @@ export default {
         date: '',
         nextDays: [],
       },
-      color: '#151515',
-      animationComponent: {
-          'clear': Clear,
-          'fewClouds': FewClouds,
-          'cloudy': Cloudy,
-          'rain': Rain,
-          'snow': Snow,
-          'mist': Mist,
-          'thunderstorm': Thunderstorm,
-        }
+      loading: {
+        state: null,
+        color: '#17113d',
+      },
     }
   },
   methods: {
     async getWeatherInfo(lat, lon, city) {
+      this.openLoading()
       await weatherService.getCity(lat, lon)
-          .then((res) => {
-            this.weatherInfo.city = city
-            this.weatherInfo.temperature = res.data.current.temp
-            this.weatherInfo.condition = res.data.current.weather[0].description
-            this.weatherInfo.rain = res.data.hourly[0]['pop']
-            this.weatherInfo.wind = res.data.current.wind_speed
-            this.weatherInfo.humidity = res.data.current.humidity
-            this.weatherInfo.date = moment.unix(res.data.current.dt).format("dddd, DD MMM")
-            this.weatherInfo.nextDays = res.data.daily.slice(1, 4)
+          .then(async (res) => {
+            await this.setWeatherInfo(res.data, city)
+            this.closeLoading()
           })
     },
+    async setWeatherInfo(info, city) {
+      this.weatherInfo.city = city
+      this.weatherInfo.temperature = info.current.temp
+      this.weatherInfo.condition = info.current.weather[0].description
+      this.weatherInfo.rain = info.hourly[0]['pop']
+      this.weatherInfo.wind = info.current.wind_speed
+      this.weatherInfo.humidity = info.current.humidity
+      this.weatherInfo.date = moment.unix(info.current.dt).format("dddd, DD MMM")
+      this.weatherInfo.nextDays = info.daily.slice(1, 4)
+    },
     openLoading() {
-      const loading = this.$vs.loading({
-        background: this.color,
-        color: '#fff'
+      this.loading.state = this.$vs.loading({
+        background: this.loading.color,
+        color: '#fff',
+        opacity: 1,
       })
-      setTimeout(() => {
-        loading.close()
-      }, 1000)
+    },
+    closeLoading() {
+      this.loading.state.close()
     },
     getAnimation() {
       if (this.weatherInfo.condition.includes('clear')) return this.animationComponent.clear
@@ -133,10 +121,17 @@ export default {
       else return this.animationComponent.cloudy
     }
   },
-  async created() {
-    this.openLoading()
-    const {lat, lon, city} = this.$route.params
-    await this.getWeatherInfo(lat, lon, city)
+  async beforeRouteEnter(to, from, next) {
+    const {lat, lon, city} = to.query
+    await next(async vm => {
+      await vm.getWeatherInfo(lat, lon, city)
+    })
+  },
+  async beforeRouteUpdate(to, from, next) {
+    const {lat, lon, city} = from.query
+    await next(async vm => {
+      await vm.getWeatherInfo(lat, lon, city)
+    })
   },
 }
 </script>
@@ -146,10 +141,11 @@ export default {
   display: inherit;
   justify-content: center;
   height: 100%;
+
   .city__today {
     width: 100%;
-    background: #4e54c8;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #8f94fb, #4e54c8);  /* Chrome 10-25, Safari 5.1-6 */
+    background: #4e54c8; /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #8f94fb, #4e54c8); /* Chrome 10-25, Safari 5.1-6 */
     background: linear-gradient(to right, #8f94fb, #4e54c8); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 
     display: flex;
@@ -187,6 +183,7 @@ export default {
       color: rgba(255, 255, 255, 0.8);
       margin-top: 5px;
     }
+
     .city_divider {
       width: 70%;
       height: 1px;
@@ -222,6 +219,7 @@ export default {
       }
     }
   }
+
   .next-days {
     color: white;
     padding: 20px;

@@ -46,12 +46,13 @@ export default {
       this.searchLoading = false
     },
     debounceInput: _.debounce(function (e) {
-      this.fetchCitiesList(e)
+      if (e) this.fetchCitiesList(e)
+      else this.cities = []
     }, 500),
     openCity(lat, lon, city) {
       this.$router.push({
         name: 'City',
-        params: {
+        query: {
           lat,
           lon,
           city,

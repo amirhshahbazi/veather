@@ -147,8 +147,7 @@ export default {
 
   .home__search-input {
     width: 400px;
-
-    input {
+    .vs-input-content {
       border-radius: 50px;
     }
     @media screen and (max-width: 500px) {

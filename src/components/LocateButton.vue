@@ -5,6 +5,7 @@
       gradient
       @click="findLocation"
       style="border-radius: 50%"
+      :loading="loading"
   >
     <i class='bx bx-current-location'></i>
   </vs-button>
@@ -13,11 +14,17 @@
 <script>
 export default {
   name: "LocateButton",
+  data() {
+    return {
+      loading: false,
+    }
+  },
   methods: {
     findLocation() {
+      this.loading = true
       this.$getLocation({
         enableHighAccuracy: false,
-        timeout: 1,
+        timeout: 7500,
         maximumAge: 0
       }).then(coordinates =>
           this.locationFound(coordinates.lat, coordinates.lng))
@@ -30,6 +37,7 @@ export default {
               title,
               text
             })
+            this.loading = false
           })
     },
     locationFound(lat, lng) {

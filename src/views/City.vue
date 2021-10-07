@@ -6,6 +6,10 @@
         </div>
       </div>
     </div>
+    <div class="city__navigation">
+      <back-button />
+      <favorite-button v-if="city" :city="city" />
+    </div>
     <div class="city__today">
       <div class="city__title"><i class='bx bxs-map'></i>{{ weatherInfo.city }}</div>
       <div class="city__date">{{ weatherInfo.date }}</div>
@@ -48,10 +52,14 @@ import weatherService from "../services/weatherService"
 import moment from 'moment'
 import Day from "../components/Day";
 import WeatherAnimation from "../components/WeatherAnimation";
+import BackButton from "../components/BackButton";
+import FavoriteButton from "../components/FavoriteButton";
 
 export default {
   name: "City",
   components: {
+    FavoriteButton,
+    BackButton,
     WeatherAnimation,
     Day,
   },
@@ -79,6 +87,7 @@ export default {
         state: null,
         color: '#17113d',
       },
+      city: null,
     }
   },
   methods: {
@@ -99,6 +108,12 @@ export default {
       this.weatherInfo.humidity = info.current.humidity
       this.weatherInfo.date = moment.unix(info.current.dt).format("dddd, DD MMM")
       this.weatherInfo.nextDays = info.daily.slice(1, 4)
+      this.setCityObject(city, info.lat, info.lon)
+    },
+    setCityObject(name, lat, lng) {
+      this.city = {
+        name, lat, lng
+      }
     },
     openLoading() {
       this.loading.state = this.$vs.loading({
@@ -141,6 +156,23 @@ export default {
   display: inherit;
   justify-content: center;
   height: 100%;
+
+  .city__navigation {
+    position: absolute;
+    color: white;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    .back-button, .favorite-button {
+      padding: 20px;
+      font-size: 20px;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
 
   .city__today {
     width: 100%;

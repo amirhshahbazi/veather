@@ -33,9 +33,6 @@ export default {
       return moment.unix(timestamp).format("DD MMM")
     }
   },
-  mounted() {
-    console.log(this.weatherInfo)
-  },
   computed: {
     icon() {
       return {

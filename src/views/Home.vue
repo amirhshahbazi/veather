@@ -12,14 +12,7 @@
           class="home__search-input"
           :loading="searchLoading"
       />
-      <vs-button
-          icon
-          color="rgb(100,51,153)"
-          gradient
-          @click="findLocation"
-      >
-        <i class='bx bx-current-location'></i>
-      </vs-button>
+      <locate-button @locationFound="locationFound"></locate-button>
     </div>
     <div class="home__cities">
       <transition-group name="slide" appear>
@@ -29,23 +22,35 @@
         </div>
       </transition-group>
     </div>
+    <favorite-city
+        v-if="favoriteCity"
+        :city="favoriteCity"
+        @click.native="openCity(favoriteCity.lat, favoriteCity.lng, favoriteCity.name)" />
   </div>
 </template>
 
 <script>
 import '@/services/geolocationService.js'
-import geolocationService from "../services/geolocationService";
+import geolocationService from "../services/geolocationService"
 import _ from 'lodash'
+import LocateButton from "../components/LocateButton"
+import FavoriteCity from "../components/FavoriteCity"
+import {storageUtility} from "../util/storageUtility"
 
 export default {
   name: 'Home',
+  components: {FavoriteCity, LocateButton},
   data() {
     return {
       query: '',
       value: '',
       cities: [],
       searchLoading: false,
+      favoriteCity: null,
     }
+  },
+  mounted() {
+    this.favoriteCity = storageUtility.getFavoriteCity()
   },
   methods: {
     async fetchCitiesList(query) {
@@ -54,43 +59,16 @@ export default {
           .then((res) => this.cities = res.data)
       this.searchLoading = false
     },
-    async fetchCityByCoordinates(lat, lon) {
-      geolocationService.reverse(lat, lon)
-          .then((res) => this.openCity(lat, lon, res.data.address.neighbourhood))
+    async fetchCityByCoordinates(lat, lng) {
+      geolocationService.reverse(lat, lng)
+          .then((res) => this.openCity(lat, lng, res.data.address.neighbourhood))
     },
     debounceInput: _.debounce(function (e) {
       if (e) this.fetchCitiesList(e)
       else this.cities = []
     }, 500),
-    findLocation() {
-      this.$getLocation({
-        enableHighAccuracy: false,
-        timeout: Infinity,
-        maximumAge: 0
-      }).then(async coordinates =>
-          await this.fetchCityByCoordinates(coordinates.lat, coordinates.lng))
-          .catch((e) => {
-            let text = this.composeErrorMessage(e), title = e.toString()
-            this.$vs.notification({
-              progress: 'auto',
-              color: '#7d33ff',
-              position: 'top-right',
-              title,
-              text
-            })
-          })
-    },
-    composeErrorMessage(e) {
-      let text
-      switch (e) {
-        case 'no position access':
-          text = 'In order to find your location and show its weather, you have to grant the location permission.'
-          break
-        default:
-          text = 'An unknown error has happened.'
-          break
-      }
-      return text
+    async locationFound(coordinates) {
+      await this.fetchCityByCoordinates(coordinates.lat, coordinates.lng)
     },
     openCity(lat, lon, city) {
       this.$router.push({
@@ -141,6 +119,7 @@ export default {
     align-items: center;
   }
 
+
   .home__cities {
     display: flex;
     flex-flow: column;
@@ -153,7 +132,7 @@ export default {
       padding: 12px 10px;
       color: white;
       border-radius: 15px;
-      width: 380px;
+      width: 420px;
       margin-bottom: 10px;
       @media screen and (max-width: 500px) {
         width: 75vw;
@@ -168,6 +147,10 @@ export default {
 
   .home__search-input {
     width: 400px;
+
+    input {
+      border-radius: 50px;
+    }
     @media screen and (max-width: 500px) {
       width: 85%;
     }

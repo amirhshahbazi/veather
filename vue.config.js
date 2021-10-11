@@ -37,7 +37,7 @@ module.exports = {
             }
         ],
 
-        workboxPluginMode: 'InjectManifest',
+        workboxPluginMode: 'GenerateSW',
         workboxOptions: {
             swSrc: 'src/service-worker.js',
         }

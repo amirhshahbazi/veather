@@ -3,6 +3,7 @@ module.exports = {
         name: 'Veather',
         short_name: "Veather",
         description: "Veather, a weather application with Vue",
+        start_url: "https://jsdev-veather.netlify.app/",
         themeColor: '#2a2157',
         msTileColor: '#fff',
         appleMobileWebAppCapable: 'yes',

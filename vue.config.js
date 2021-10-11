@@ -3,12 +3,13 @@ module.exports = {
         name: 'Veather',
         short_name: "Veather",
         description: "Veather, a weather application with Vue",
-        start_url: "/",
+        start_url: "./index.html",
+        display: "standalone",
         themeColor: '#2a2157',
-        msTileColor: '#fff',
-        appleMobileWebAppCapable: 'yes',
-        appleMobileWebAppStatusBarStyle: 'black',
-        display: "fullscreen",
+        // msTileColor: '#fff',
+        // appleMobileWebAppCapable: 'yes',
+        // appleMobileWebAppStatusBarStyle: 'black',
+        // display: "fullscreen",
         icons: [
             {
                 src: "/src/assets/icons/icon-192x192.png",

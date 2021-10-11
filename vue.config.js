@@ -38,8 +38,8 @@ module.exports = {
         ],
 
         workboxPluginMode: 'GenerateSW',
-        workboxOptions: {
-            swSrc: 'src/service-worker.js',
-        }
+        // workboxOptions: {
+        //     swSrc: 'src/service-worker.js',
+        // }
     }
 }

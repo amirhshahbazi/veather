@@ -1,34 +1,16 @@
-# veather
+![Veather](https://user-images.githubusercontent.com/56741409/137601221-85e04d62-abdc-4e0c-9d63-f1fbf7c05079.png)
 
-## Project setup
-```
-npm install
-```
+# Veather
+## A PWA weather project written in Vue.js, based on OpenWeatherMap API for current and forecast data, and LocationIQ autocomplete API.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## Roadmap
+- [x] Basic features
+- [x] Find location by Geolocation API
+- [x] Favorite city
+- [x] Add PWA plugin and make the app installable
+- [ ] Optimize the application for Netlify deployment
+- [ ] Add appropriate redirect file for history mode on Netlify
 
-### Compiles and minifies for production
-```
-npm run build
-```
 
-### Run your unit tests
-```
-npm run test:unit
-```
 
-### Run your end-to-end tests
-```
-npm run test:e2e
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+https://jsdev-veather.netlify.app/
